@@ -68,8 +68,8 @@ ggplot(homicide)+aes(yearcode,count)+geom_point()#+geom_smooth(method="loess")
 #
 homicide <- chicagocrime %>% 
   group_by(primary_type,year,yday) %>% 
-  summarise(count=n())
-
+  summarise(count=n()) %>% ungroup() %>% group_by(year) %>% mutate(ysum = cumsum(count))
+View(homicide)
 homicide$yearsum <- ave(homicide$count,homicide$year,FUN=cumsum)
 
 maxyear <- max(homicide$year)
@@ -104,7 +104,7 @@ write.csv(homicide, file = outfile)
 
 title = paste("Chicago cumulative homicides by day-of-year as of ", maxmonth ," ",maxday,sep="")
 homicide %>% filter( year >= 2015)  %>% mutate(ydate = as.Date(paste("2017-01-01",sep=""))+yday-1) %>%
-                                          ggplot+aes(ydate,yearsum, color=factor(year)) +  geom_line()+
+                                          ggplot+aes(ydate,ysum, color=factor(year)) +  geom_line()+
                                           labs(title=title, x="Time of year", y="Cumulative homicide count") +
                                           scale_x_date(date_breaks = "1 month", date_labels =  "%b")   +
                                           labs(color="By Year")+ theme(legend.position = c(0.05,0.851)) +
