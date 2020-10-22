@@ -21,8 +21,21 @@ scalevalue <- function(value, scale)
 #
 # import via web API
 # $app_token=2OghfIz6RILPCh3eJQ5XI4ZZQ obtained via OpenData by Socrata
+# crime_file = "https://data.cityofchicago.org/resource/6zsd-86xi.csv?primary_type=HOMICIDE&$where=year>2000&$limit=20000&$$app_token=2OghfIz6RILPCh3eJQ5XI4ZZQ"
 #
-crime_file = "https://data.cityofchicago.org/resource/6zsd-86xi.csv?primary_type=HOMICIDE&$where=year>2000&$limit=20000&$$app_token=2OghfIz6RILPCh3eJQ5XI4ZZQ"
+
+violation = "HOMICIDE"
+firstyear = 2000
+recordlimit = 20000
+apptoken = "2OghfIz6RILPCh3eJQ5XI4ZZQ"
+
+crime_file = paste0("https://data.cityofchicago.org/resource/6zsd-86xi.csv?",
+                   "primary_type=", violation, 
+                   "&$where=year>", firstyear,
+                   "&$limit=", recordlimit,
+                   "&$$app_token=", apptoken
+                   )
+
 chicagocrime <- read_csv(crime_file, 
                           col_types = cols(
                             date = col_datetime(format = "%Y-%m-%dT%H:%M:%S"), 
@@ -36,16 +49,17 @@ chicagocrime <- read_csv(crime_file,
 #
 # add some useful date-based modifiers for further analysis
 #
-chicagocrime <- chicagocrime %>% mutate(date = as.Date(datetime, format="%Y-%m-%d"),
-                                        year = year(date),
-                                        decade = (year %/% 10)*10,
-                                        quarter = quarter(date),
-                                        month = month(date),
-                                        day = day(date),
-                                        hour = hour(datetime),
-                                        dow = weekdays(date),
-                                        yday = yday(date)
-                                        )
+chicagocrime <- chicagocrime %>% 
+                      mutate(date = as.Date(datetime, format="%Y-%m-%d"),
+                            year = year(date),
+                            decade = (year %/% 10)*10,
+                            quarter = quarter(date),
+                            month = month(date),
+                            day = day(date),
+                            hour = hour(datetime),
+                            dow = weekdays(date),
+                            yday = yday(date)
+                            )
 
 #
 # Summary homicide data on year-to-date, down to the last reported yearday
@@ -58,7 +72,8 @@ homicide <- chicagocrime %>%
                 mutate(ysum = cumsum(count)) %>%
                 ungroup()
 
-max_yday <- as.numeric(homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday)))
+# max_yday <- as.numeric(homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday)))
+max_yday <- homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday))
 
 homicide_YTDay <- homicide %>% filter(yday <= max_yday )  %>% group_by(year) %>% summarise(total=sum(count)) %>% ungroup()
 
@@ -91,3 +106,15 @@ homicide %>%  filter( year >= 2015)  %>%
 
 
 ggsave("graphs/chicagohomicide-by-dayofyear.png")
+
+#
+# by months
+#
+#
+head(chicagocrime)
+chicagocrime %>% group_by(year,month) %>% 
+                  summarize(monthlyhomicide=n()) %>% filter(year>2014) %>%
+                  mutate(date=as.Date(paste0(year,"-",month,"-01"))) %>%
+                  ggplot() + aes(x=year, y=monthlyhomicide, fill=factor(month)) + geom_col() + 
+                  labs(x="Year", y="Homicide per month", fill="Month")
+                  #coord_flip() + theme_light()
