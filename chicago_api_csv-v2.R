@@ -73,7 +73,7 @@ homicide <- chicagocrime %>%
                 ungroup()
 
 # max_yday <- as.numeric(homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday)))
-max_yday <- homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday))
+max_yday <- homicide %>% filter(year == max(year)) %>% summarize(maxyday = max(yday)) %>% pull(maxyday)
 
 homicide_YTDay <- homicide %>% filter(yday <= max_yday )  %>% group_by(year) %>% summarise(total=sum(count)) %>% ungroup()
 
@@ -86,8 +86,8 @@ homicide_YTDay %>%  ggplot() +
                       aes(year,total) +
                       geom_bar(stat="identity") +
                       labs(title=title, x="Year", y="Homicide count") +
-                      geom_text(aes(label=total),vjust=-1) + 
-                      ylim(0,max_y_value)
+                      geom_text(aes(label=total),vjust=-1) #+ 
+                      #ylim(0,max_y_value)
                              
 write.csv(homicide, "data/chicagohomicide.csv")
 ggsave("graphs/chicagohomicide_YTD.png")
@@ -95,7 +95,7 @@ ggsave("graphs/chicagohomicide_YTD.png")
 max_y_value = scalevalue(homicide$ysum, 100)
 
 title = paste0("Chicago cumulative homicides by day-of-year as of ", format(maxdate, format="%b %d"))
-homicide %>%  filter( year >= 2015)  %>% 
+homicide %>%  filter( year %in% c(2015,2016,2020,2021))  %>% 
               mutate(ydate = as.Date("2017-01-01")+yday-1) %>%
               ggplot() + aes(ydate, ysum, color = factor(year)) + 
                         geom_line() +
@@ -115,6 +115,6 @@ head(chicagocrime)
 chicagocrime %>% group_by(year,month) %>% 
                   summarize(monthlyhomicide=n()) %>% filter(year>2014) %>%
                   mutate(date=as.Date(paste0(year,"-",month,"-01"))) %>%
-                  ggplot() + aes(x=year, y=monthlyhomicide, fill=factor(month)) + geom_col() + 
+                  ggplot() + aes(x=year, y=monthlyhomicide, fill=fct_reorder(factor(month),-month)) + geom_col() + 
                   labs(x="Year", y="Homicide per month", fill="Month")
                   #coord_flip() + theme_light()
