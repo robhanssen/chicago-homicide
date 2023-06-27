@@ -102,8 +102,9 @@ crime_ytd_g <-
   geom_text(aes(label = total), vjust = -1)
 
 
-ggsave("graphs/chicagohomicide_YTD.png", 
-  plot = crime_ytd_g)
+ggsave("graphs/chicagohomicide_YTD.png",
+  plot = crime_ytd_g
+)
 
 max_y_value <- scalevalue(homicide$ysum, 100)
 
@@ -128,8 +129,9 @@ crime_cumulative_g <-
   theme(legend.position = c(0.07, 0.845))
 
 
-ggsave("graphs/chicagohomicide-by-dayofyear.png", 
-  plot = crime_cumulative_g)
+ggsave("graphs/chicagohomicide-by-dayofyear.png",
+  plot = crime_cumulative_g
+)
 
 #
 # by months
@@ -150,5 +152,6 @@ crime_by_month_g <-
   geom_col() +
   labs(x = "Year", y = "Homicide per month", fill = "Month")
 
-ggsave("graphs/chicagohomicide-by-month.png", 
-  plot = crime_by_month_g)
+ggsave("graphs/chicagohomicide-by-month.png",
+  plot = crime_by_month_g
+)
