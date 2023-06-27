@@ -94,14 +94,16 @@ title <- paste(
 
 max_y_value <- scalevalue(homicide_YTDay$total, 50)
 
-homicide_YTDay %>% ggplot() +
+crime_ytd_g <-
+  homicide_YTDay %>% ggplot() +
   aes(year, total) +
   geom_bar(stat = "identity") +
   labs(title = title, x = "Year", y = "Homicide count") +
   geom_text(aes(label = total), vjust = -1)
 
 
-ggsave("graphs/chicagohomicide_YTD.png")
+ggsave("graphs/chicagohomicide_YTD.png", 
+  plot = crime_ytd_g)
 
 max_y_value <- scalevalue(homicide$ysum, 100)
 
@@ -110,7 +112,8 @@ title <- paste0(
   format(maxdate, format = "%b %d")
 )
 
-homicide %>%
+crime_cumulative_g <-
+  homicide %>%
   filter(year %in% c(2015, 2016, 2020, 2021, 2022, 2023)) %>%
   mutate(ydate = as.Date("2017-01-01") + yday - 1) %>%
   ggplot() +
@@ -125,14 +128,16 @@ homicide %>%
   theme(legend.position = c(0.07, 0.845))
 
 
-ggsave("graphs/chicagohomicide-by-dayofyear.png")
+ggsave("graphs/chicagohomicide-by-dayofyear.png", 
+  plot = crime_cumulative_g)
 
 #
 # by months
 #
 #
-head(chicagocrime)
-chicagocrime %>%
+
+crime_by_month_g <-
+  chicagocrime %>%
   group_by(year, month) %>%
   summarize(monthlyhomicide = n()) %>%
   filter(year > 2014) %>%
@@ -144,3 +149,6 @@ chicagocrime %>%
   ) +
   geom_col() +
   labs(x = "Year", y = "Homicide per month", fill = "Month")
+
+ggsave("graphs/chicagohomicide-by-month.png", 
+  plot = crime_by_month_g)
